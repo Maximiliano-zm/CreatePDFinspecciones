@@ -1,0 +1,16 @@
+{
+  "name": "fn_acta1",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "@azure/functions": "^4.0.0",
+    "puppeteer": "^23.10.1",
+    "puppeteer-core": "^23.9.0"
+  },
+  "main": "src/{index.js,functions/*.js}"
+}
