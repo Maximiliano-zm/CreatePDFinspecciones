@@ -7,7 +7,7 @@ WORKDIR /home/site/wwwroot
 # Copy package.json and package-lock.json
 COPY package.json ./
 
-# Install dependencies (including Puppeteer's system dependencies)
+# Install dependencies (including Puppeteer and Chromium dependencies)
 RUN apt-get update && apt-get install -y \
     curl \
     libnss3 \
@@ -16,10 +16,32 @@ RUN apt-get update && apt-get install -y \
     libcups2 \
     libxkbcommon-x11-0 \
     libgbm-dev \
+    libasound2 \
+    libxrandr2 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxext6 \
+    libfontconfig1 \
+    libpango1.0-0 \
+    libharfbuzz0b \
+    libfreetype6 \
+    libjpeg62-turbo \
+    libpng16-16 \
+    libglib2.0-0 \
+    libcairo2 \
+    libstdc++6 \
     unzip \
-    && npm install --only=production \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Download Chromium manually
+RUN curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+    && apt-get update && apt-get install -y ./google-chrome-stable_current_amd64.deb \
+    && rm google-chrome-stable_current_amd64.deb
+
+# Set Puppeteer to use the manually installed Chromium
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
 # Install Azure Functions Core Tools using npm
 RUN npm install -g azure-functions-core-tools@4 --unsafe-perm=true
@@ -31,8 +53,8 @@ RUN func --version || echo "Azure Functions Core Tools not found"
 COPY . .
 
 # Expose the port Azure Functions runtime listens to
-ENV PORT=8080
-EXPOSE 8080
+ENV PORT=7071
+EXPOSE 7071
 
 # Start the Azure Functions runtime
 CMD ["func", "start", "--javascript"]

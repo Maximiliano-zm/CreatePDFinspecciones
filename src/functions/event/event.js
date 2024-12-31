@@ -8,7 +8,7 @@ const EventStatus = {
     mensaje: "Error mapear json HTML",
   },
   ERRORCREATEPDF: {
-    code: 422,
+    code: 500,
     mensaje: "Error mapear json HTML",
   },
 };

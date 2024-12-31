@@ -1,29 +1,41 @@
 import Event from "../event/event.js";
-import puppeteer from "puppeteer"; // Cambia a puppeteer-core para evitar conflictos
+import puppeteer from "puppeteer-core";
+// import puppeteer from "puppeteer";
 
 const FnCreateDocument = async (ContentMap) => {
   try {
-    // Ruta al binario de Chromium instalado en el contenedor
-
-
+    // Configurar Puppeteer con opciones específicas para contenedores
     const browser = await puppeteer.launch({
-      
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-accelerated-2d-canvas",
+        "--disable-gpu",
+        "--no-zygote",
+        "--single-process",
+        "--headless=new", // Mejor manejo de procesos en versiones recientes
+      ],
+      executablePath: process.env.CHROMIUM_PATH || "/usr/bin/google-chrome-stable", // Ruta al ejecutable
+      headless: true,
     });
 
     const page = await browser.newPage();
 
-    // Cargar el contenido HTML dinámico
-    await page.setContent(ContentMap);
+    // Configurar el contenido HTML para renderizar en la página
+    await page.setContent(ContentMap, {
+      waitUntil: "networkidle0", // Asegurar que todo el contenido se cargue
+    });
 
     // Generar el PDF y obtenerlo como un buffer
     const pdfBuffer = await page.pdf({
-      format: "LETTER",
+      format: "A4", // Cambiar a A4 si es más estándar para tu caso
       printBackground: true,
       margin: {
-        top: "10px",
-        bottom: "10px",
-        left: "10px",
-        right: "10px",
+        top: "10mm",
+        bottom: "10mm",
+        left: "10mm",
+        right: "10mm",
       },
     });
 
@@ -36,7 +48,7 @@ const FnCreateDocument = async (ContentMap) => {
       pdfBase64,
     };
   } catch (error) {
-    console.log(error);
+    console.error("Error al generar el PDF:", error);
     let errorLOG = error;
     let errogeneral = {
       Event: Event.ERRORCREATEPDF,
@@ -47,8 +59,16 @@ const FnCreateDocument = async (ContentMap) => {
 };
 
 const Document365 = async (json) => {
-  const respuesta = await FnCreateDocument(json);
-  return respuesta;
+  try {
+    const respuesta = await FnCreateDocument(json);
+    return respuesta;
+  } catch (error) {
+    console.error("Error en Document365:", error);
+    return {
+      Event: Event.ERRORCREATEPDF,
+      ErrorLOG: error,
+    };
+  }
 };
 
 export default Document365;
